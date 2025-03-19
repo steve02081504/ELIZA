@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="darkreader-lock">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Eliza</title>
+	<link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+	<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.min.css">
+</head>
+
+<body class="bg-base-200 min-h-screen flex flex-col items-center justify-center p-4">
+	<h1 class="text-3xl font-semibold mb-4">Eliza</h1>
+
+	<!-- UI Switcher (Toggle) -->
+	<div class="form-control">
+		<label class="label cursor-pointer">
+			<span class="label-text">Modern UI</span>
+			<input type="checkbox" class="toggle" id="ui-toggle" />
+			<span class="label-text">Terminal UI</span>
+		</label>
+	</div>
+
+
+	<div id="modern-ui" class="card w-full max-w-md bg-base-100 shadow-xl">
+		<div class="card-body">
+			<div id="conversation" class="mb-4 h-64 overflow-y-auto"></div>
+			<div class="flex">
+				<input type="text" id="user-input" placeholder="Type your message here..." class="input input-bordered w-full rounded-none rounded-l-lg" />
+				<button id="send-button" class="btn btn-primary rounded-none rounded-r-lg">Send</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="terminal-ui" class="mockup-code border hidden w-full">
+		<div id="terminal-container" class="overflow-y-auto"></div>
+	</div>
+
+	<div class="text-sm mt-4">
+		github: <a target="_blank" class="link" href="https://github.com/steve02081504/ELIZA">steve02081504/ELIZA</a>
+	</div>
+
+	<script>
+		const is_dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+		if (is_dark) document.documentElement.dataset.theme = 'dark'
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches: isDark }) => {
+			document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+		})
+	</script>
+
+	<script type="module">
+		import { ElizaBot } from './elizabot.mjs'
+		import { Terminal } from 'https://esm.run/xterm'
+		import { WebLinksAddon } from 'https://esm.run/@xterm/addon-web-links'
+		import { ClipboardAddon } from 'https://esm.run/@xterm/addon-clipboard'
+		import { FitAddon } from 'https://esm.run/@xterm/addon-fit'
+
+		const eliza = new ElizaBot()
+		const conversationDiv = document.getElementById('conversation')
+		const userInput = document.getElementById('user-input')
+		const sendButton = document.getElementById('send-button')
+		const uiToggle = document.getElementById('ui-toggle')
+		const modernUI = document.getElementById('modern-ui')
+		const terminalUI = document.getElementById('terminal-ui')
+		const terminalContainer = document.getElementById('terminal-container')
+
+		// Initialize Xterm.js
+		const terminal = new Terminal({
+			cursorBlink: true,
+			allowTransparency: true,  // Important for background to show
+			theme: {
+				background: 'rgba(0,0,0,0)', // Transparent background
+			},
+			cursorStyle: 'underline', // Default to underline (insert mode)
+
+			linkHandler: {
+				activate(event, text, range) {
+					// 如果右键点击,则不打开链接
+					if (event.button === 2) return
+					event.preventDefault()
+					window.open(text, '_blank')
+				}
+			},
+		})
+		const fiter = new FitAddon()
+		terminal.loadAddon(fiter)
+		terminal.loadAddon(new WebLinksAddon())
+		terminal.loadAddon(new ClipboardAddon())
+		terminal.open(terminalContainer)
+		terminal.element.addEventListener('contextmenu', async (event) => {
+			event.preventDefault()
+			const selectedText = terminal.getSelection()
+			if (selectedText) {
+				await navigator.clipboard.writeText(selectedText)
+				terminal.clearSelection()
+			}
+			else
+				terminal.paste(await navigator.clipboard.readText())
+		})
+		window.addEventListener('resize', () => {
+			fiter.fit()
+		})
+
+		terminal.writeln('Welcome to')
+		terminal.writeln('       EEEEEE  LL      IIII   ZZZZZZZ   AAAAA ')
+		terminal.writeln('       EE      LL       II        ZZ   AA   AA')
+		terminal.writeln('       EEEEE   LL       II      ZZZ    AAAAAAA')
+		terminal.writeln('       EE      LL       II     ZZ      AA   AA')
+		terminal.writeln('       EEEEEE  LLLLLL  IIII   ZZZZZZZ  AA   AA')
+		terminal.writeln('')
+		terminal.writeln('\x1b]8;;https://github.com/steve02081504/ELIZA\x07Eliza\x1b]8;;\x07 is a mock Rogerian psychotherapist.')
+		terminal.writeln('The original programmed was described by \x1b]8;;https://en.wikipedia.org/wiki/Joseph_Weizenbaum\x07Joseph Weizenbaum\x1b]8;;\x07 in 1964.')
+		terminal.writeln('This implementation by \x1b]8;;https://github.com/steve02081504\x07Steve02081504\x1b]8;;\x07 2025.')
+		terminal.writeln('')
+		terminal.writeln('')
+
+		// History
+		const history = []
+		let historyIndex = -1  // -1 means no history item selected
+		let currentLine = ''  // Store the current line content
+		let cursorPosition = 0 // Store the cursor position
+		let isInsertMode = true // Start in insert mode
+
+
+		// Function to handle UI switching
+		function switchUI() {
+			if (uiToggle.checked) {
+				modernUI.classList.add('hidden')
+				terminalUI.classList.remove('hidden')
+				fiter.fit() // Fit terminal after showing
+			} else {
+				terminalUI.classList.add('hidden')
+				modernUI.classList.remove('hidden')
+			}
+		}
+		uiToggle.addEventListener('change', switchUI)
+		switchUI()
+
+		function displayMessage(message, sender) {
+			// Modern UI
+			const chatDiv = document.createElement('div')
+			chatDiv.classList.add('chat')
+			if (sender === 'user')
+				chatDiv.classList.add('chat-end')
+			else
+				chatDiv.classList.add('chat-start')
+
+			const chatBubbleDiv = document.createElement('div')
+			chatBubbleDiv.classList.add('chat-bubble')
+			chatBubbleDiv.textContent = message
+
+			chatDiv.appendChild(chatBubbleDiv)
+			conversationDiv.appendChild(chatDiv)
+			conversationDiv.scrollTop = conversationDiv.scrollHeight
+
+			// Terminal UI
+			if (sender != 'user') {
+				terminal.writeln('')
+				terminal.writeln(message)
+				resetAndWritePrompt()
+			}
+		}
+
+		async function sendMessage() {
+			const text = userInput.value
+			if (!text.trim()) return
+
+			displayMessage(text, 'user')
+			userInput.value = ''
+
+			await new Promise(resolve => setTimeout(resolve, 500))
+
+			const reply = eliza.transform(text)
+			displayMessage(reply, 'eliza')
+
+			if (eliza.quit) {
+				userInput.disabled = true
+				sendButton.disabled = true
+			}
+		}
+
+		// Initial message
+		displayMessage(eliza.getInitialMessage(), 'eliza')
+
+		sendButton.addEventListener('click', sendMessage)
+		userInput.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault()
+				sendMessage()
+			}
+		})
+		userInput.addEventListener('input', () => {
+			currentLine = userInput.value
+			cursorPosition = currentLine.length
+			refreshTerminalLine()
+		})
+
+
+		function addToHistory(input) {
+			if (history[history.length - 1] !== input)
+				history.push(input)
+		}
+
+
+		function refreshTerminalLine() {
+			terminal.write('\x1b[2K\r> ') // Clear line and write prompt
+			terminal.write(currentLine)
+			// Set cursor position.  Crucially, use G (absolute) NOT C (relative)
+			terminal.write(`\x1b[${cursorPosition + 3}G`) // +3 for "> " and 1-based indexing
+		}
+
+		function resetAndWritePrompt() {
+			userInput.value = ''
+			terminal.write('\r> ')
+			currentLine = ''
+			cursorPosition = 0
+		}
+
+
+		function moveCursorWordLeft() {
+			if (cursorPosition <= 0) return
+
+			const textBeforeCursor = currentLine.substring(0, cursorPosition)
+			const lastSpaceIndex = textBeforeCursor.trimEnd().lastIndexOf(' ') // Trim to handle trailing spaces
+
+			if (lastSpaceIndex === -1)
+				cursorPosition = 0
+			else
+				cursorPosition = lastSpaceIndex + 1  // Correct positioning
+
+			refreshTerminalLine()
+		}
+
+		function moveCursorWordRight() {
+			if (cursorPosition >= currentLine.length) return
+
+			const textAfterCursor = currentLine.substring(cursorPosition)
+			const nextSpaceIndex = textAfterCursor.trimStart().indexOf(' ')  //Trim to handle leading spaces.
+
+			if (nextSpaceIndex === -1)
+				cursorPosition = currentLine.length
+			else
+				cursorPosition = cursorPosition + nextSpaceIndex + 1 //Correct positioning
+
+			refreshTerminalLine()
+		}
+
+
+		function deleteWordLeft() {
+			if (cursorPosition <= 0) return
+
+			const textBeforeCursor = currentLine.substring(0, cursorPosition)
+			const lastSpaceIndex = textBeforeCursor.trimEnd().lastIndexOf(' ') //Correct: Use trimEnd()
+			let newCursorPosition
+
+			if (lastSpaceIndex === -1) {
+				currentLine = currentLine.substring(cursorPosition) //Delete everything before cursor
+				newCursorPosition = 0
+			} else {
+				currentLine = currentLine.substring(0, lastSpaceIndex + 1) + currentLine.substring(cursorPosition)
+				newCursorPosition = lastSpaceIndex + 1 //Correct positioning
+			}
+
+			cursorPosition = newCursorPosition
+			refreshTerminalLine()
+		}
+
+
+
+		async function sendMessageFromTerminal(text) {
+			if (!text.trim()) return
+
+			displayMessage(text, 'user')
+			userInput.value = text // Synchronize with modern input
+
+			await new Promise(resolve => setTimeout(resolve, 500))
+
+			const reply = eliza.transform(text)
+			displayMessage(reply, 'eliza')
+
+			if (eliza.quit) {
+				userInput.disabled = true
+				sendButton.disabled = true
+				terminal.writeln('')
+				terminal.write('Eliza session ended. Press Ctrl+C to exit.') // Or another suitable message
+				terminal.options.disableStdin = true
+				terminal.blur()
+
+			}
+		}
+
+		// Key event handler for the terminal
+		terminal.onKey(e => {
+			const { key, domEvent } = e
+
+			// Switch cursor mode (Insert/Overwrite)
+			if (domEvent.key === 'Insert') {
+				isInsertMode = !isInsertMode
+				terminal.options.cursorStyle = isInsertMode ? 'underline' : 'block'
+				refreshTerminalLine() // Refresh immediately to show the change
+				return
+			}
+
+			if (key === '\r') { // Enter key
+				const input = currentLine
+				if (input.length > 0)
+					addToHistory(input)
+
+				historyIndex = -1
+				sendMessageFromTerminal(input)
+				currentLine = ''
+				cursorPosition = 0
+			} else if (key.charCodeAt(0) === 127) { // Backspace/Del
+				if (cursorPosition > 0) {
+					currentLine = currentLine.slice(0, cursorPosition - 1) + currentLine.slice(cursorPosition)
+					cursorPosition--
+					refreshTerminalLine()
+				}
+			} else if (key === '\x1b[D') { // Left arrow
+				if (cursorPosition > 0) {
+					cursorPosition--
+					refreshTerminalLine()
+				}
+			} else if (key === '\x1b[C') { // Right arrow
+				if (cursorPosition < currentLine.length) {
+					cursorPosition++
+					refreshTerminalLine()
+				}
+			} else if (key === '\x1b[A') { // Up arrow
+				if (history.length > 0) {
+					if (historyIndex === -1)
+						historyIndex = history.length - 1
+					else if (historyIndex > 0)
+						historyIndex--
+
+					currentLine = history[historyIndex]
+					cursorPosition = currentLine.length
+					refreshTerminalLine()
+				}
+			} else if (key === '\x1b[B') { // Down arrow
+				if (historyIndex >= 0)
+					if (historyIndex < history.length - 1) {
+						historyIndex++
+						currentLine = history[historyIndex]
+						cursorPosition = currentLine.length
+						refreshTerminalLine()
+					} else {
+						historyIndex = -1
+						currentLine = ''
+						cursorPosition = 0
+						refreshTerminalLine()
+					}
+
+			} else if (key === '\x1b[1;5D')  // Ctrl + Left
+				moveCursorWordLeft()
+			else if (key === '\x1b[1;5C')  // Ctrl + Right
+				moveCursorWordRight()
+			else if (key === '\x7f')   // Ctrl + Backspace
+				deleteWordLeft()
+			else if (key.charCodeAt(0) >= 32) { // Printable characters
+				if (isInsertMode) {
+					// Correct insert mode logic:
+					currentLine = currentLine.slice(0, cursorPosition) + key + currentLine.slice(cursorPosition)
+					cursorPosition++ // Increment AFTER inserting
+				} else {
+					// Correct overwrite mode logic:
+					currentLine = currentLine.slice(0, cursorPosition) + key + currentLine.slice(cursorPosition + 1)
+					cursorPosition++ // Increment AFTER overwriting
+				}
+				refreshTerminalLine()
+			}
+			userInput.value = currentLine
+		})
+	</script>
+</body>
+
+</html>

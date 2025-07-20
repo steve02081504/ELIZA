@@ -2,7 +2,7 @@
 
 > A Digital Psychotherapist from the 1960s
 
-[![fount character](https://steve02081504.github.io/fount/badges/fount_character.svg)](https://steve02081504.github.io/fount/protocol?url=fount://run/shells/install/install;https://github.com/steve02081504/ELIZA)
+[![fount character](https://steve02081504.github.io/fount/badges/fount_character.svg)](https://github.com/topics/fount-character)
 
 ![repo preview](https://repository-images.githubusercontent.com/951040902/30e2c4e9-49e1-444f-99fb-eccfe939376f)
 

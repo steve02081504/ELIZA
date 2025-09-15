@@ -73,12 +73,13 @@
 	</script>
 
 	<script type="module">
-		import { ElizaBot } from './elizabot.mjs'
-		import { print_eliza_logo } from './bin.mjs'
-		import { Terminal } from 'https://esm.run/xterm'
-		import { WebLinksAddon } from 'https://esm.run/@xterm/addon-web-links'
 		import { ClipboardAddon } from 'https://esm.run/@xterm/addon-clipboard'
 		import { FitAddon } from 'https://esm.run/@xterm/addon-fit'
+		import { WebLinksAddon } from 'https://esm.run/@xterm/addon-web-links'
+		import { Terminal } from 'https://esm.run/xterm'
+
+		import { print_eliza_logo } from './bin.mjs'
+		import { ElizaBot } from './elizabot.mjs'
 
 		const eliza = new ElizaBot()
 		const dom = {

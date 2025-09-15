@@ -4,6 +4,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+
 import { ElizaBot } from './elizabot.mjs'
 
 const bot = new ElizaBot()
@@ -34,8 +35,8 @@ export default {
 
 	interfaces: {
 		chat: {
-			GetGreeting: (arg, index) => ({content: bot.getInitialMessage()}),
-			GetGroupGreeting: (arg, index) => ({content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname)}),
+			GetGreeting: (arg, index) => ({ content: bot.getInitialMessage() }),
+			GetGroupGreeting: (arg, index) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
 			GetPrompt: async (args, prompt_struct, detail_level) => {
 				return {
 					text: [],

@@ -37,14 +37,14 @@ export default {
 		chat: {
 			GetGreeting: (arg, index) => ({ content: bot.getInitialMessage() }),
 			GetGroupGreeting: (arg, index) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
-			GetPrompt: async (args, prompt_struct, detail_level) => {
+			GetPrompt: async (args) => {
 				return {
 					text: [],
 					additional_chat_log: [],
 					extension: {},
 				}
 			},
-			GetPromptForOther: (args, prompt_struct, detail_level) => {
+			GetPromptForOther: (args) => {
 				return {
 					text: [{
 						content: 'a mock Rogerian psychotherapist',

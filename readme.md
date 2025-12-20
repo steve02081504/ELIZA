@@ -59,7 +59,7 @@ You can easily import Eliza into [fount](https://github.com/steve02081504/fount)
 ![图片](https://github.com/user-attachments/assets/2aac75a4-4114-46d8-9986-22eb6b78d5f0)
 ![图片](https://github.com/user-attachments/assets/89472df8-6795-4eda-9b91-9a080c9dcabb)
 
-[Quick install](https://steve02081504.github.io/fount/protocol?url=fount://run/shells/install/install;https://github.com/steve02081504/ELIZA)
+[Quick install](https://steve02081504.github.io/fount/protocol?url=fount://run/shells:install/install;https://github.com/steve02081504/ELIZA)
 
 ## ELIZA in Your Terminal
 

@@ -515,6 +515,11 @@ export class ElizaBot {
 		}
 
 		// Helper function to update transform arrays.
+		/**
+		 *
+		 * @param existing
+		 * @param updates
+		 */
 		const updateTransforms = (existing, updates) => {
 			if (updates && Array.isArray(updates))
 				return (existing || []).concat(updates)

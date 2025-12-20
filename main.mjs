@@ -10,7 +10,7 @@ import { ElizaBot } from './elizabot.mjs'
 const bot = new ElizaBot()
 
 const chardir = import.meta.dirname
-const charurl = `/chars/${encodeURIComponent(path.basename(chardir))}`
+const charurl = `/parts/chars:${encodeURIComponent(path.basename(chardir))}`
 
 /** @type {charAPI_t} */
 export default {
@@ -28,23 +28,62 @@ export default {
 		}
 	},
 
+	/**
+	 *
+	 * @param stat
+	 */
 	Init: (stat) => { },
+	/**
+	 *
+	 * @param reason
+	 * @param from
+	 */
 	Uninstall: (reason, from) => { },
+	/**
+	 *
+	 * @param stat
+	 */
 	Load: (stat) => { },
+	/**
+	 *
+	 * @param reason
+	 */
 	Unload: (reason) => { },
 
 	interfaces: {
 		chat: {
+			/**
+			 *
+			 * @param arg
+			 * @param index
+			 */
 			GetGreeting: (arg, index) => ({ content: bot.getInitialMessage() }),
+			/**
+			 *
+			 * @param arg
+			 * @param index
+			 */
 			GetGroupGreeting: (arg, index) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
-			GetPrompt: async (args) => {
+			/**
+			 *
+			 * @param args
+			 * @param prompt_struct
+			 * @param detail_level
+			 */
+			GetPrompt: async (args, prompt_struct, detail_level) => {
 				return {
 					text: [],
 					additional_chat_log: [],
 					extension: {},
 				}
 			},
-			GetPromptForOther: (args) => {
+			/**
+			 *
+			 * @param args
+			 * @param prompt_struct
+			 * @param detail_level
+			 */
+			GetPromptForOther: (args, prompt_struct, detail_level) => {
 				return {
 					text: [{
 						content: 'a mock Rogerian psychotherapist',
@@ -54,6 +93,10 @@ export default {
 					extension: {},
 				}
 			},
+			/**
+			 *
+			 * @param args
+			 */
 			GetReply: async (args) => {
 				const ElizaState = args.chat_log.findLast(x => x.extension?.ElizaState)?.extension?.ElizaState
 				if (ElizaState) bot.setState(ElizaState)

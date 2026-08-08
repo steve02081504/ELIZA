@@ -2,9 +2,10 @@
 const CI = fountCharCI
 
 /**
- * @param {Record<string, Record<string | number, number>> | undefined} lastChoices
- * @param {string} key
- * @returns {boolean}
+ * 判断 lastChoices 中指定关键词是否已有选用记录。
+ * @param {Record<string, Record<string | number, number>> | undefined} lastChoices - Eliza 的 lastChoices 状态。
+ * @param {string} key - 关键词键名。
+ * @returns {boolean} 该关键词下是否存在非 -1 的选用索引。
  */
 function lastChoicesTouched(lastChoices, key) {
 	return Object.values(lastChoices?.[key] || {}).some(v => v !== -1)

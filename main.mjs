@@ -1,5 +1,5 @@
 /**
- * @typedef {import('../../../../../src/decl/charAPI.ts').charAPI_t} charAPI_t
+ * @typedef {import('../../../../../src/decl/charAPI.ts').CharAPI_t} CharAPI_t
  */
 
 import fs from 'node:fs'
@@ -12,9 +12,8 @@ const bot = new ElizaBot()
 const chardir = import.meta.dirname
 const charurl = `/parts/chars:${encodeURIComponent(path.basename(chardir))}`
 
-/** @type {charAPI_t} */
+/** @type {CharAPI_t} */
 export default {
-	// 角色的基本信息
 	info: {
 		'en-US': {
 			name: 'Eliza',
@@ -23,79 +22,50 @@ export default {
 			description_markdown: fs.readFileSync(chardir + '/readme.md', 'utf-8'),
 			version: '1.0.0',
 			author: 'Joseph Weizenbaum & Steve02081504',
-			homepage: 'https://github.com/steve02081504/Eliza',
+			home_page: 'https://github.com/steve02081504/ELIZA',
+			issue_page: 'https://github.com/steve02081504/ELIZA/issues',
 			tags: ['electronic antiques', 'no AIsource'],
 		}
 	},
 
-	/**
-	 *
-	 * @param stat
-	 */
-	Init: (stat) => { },
-	/**
-	 *
-	 * @param reason
-	 * @param from
-	 */
-	Uninstall: (reason, from) => { },
-	/**
-	 *
-	 * @param stat
-	 */
-	Load: (stat) => { },
-	/**
-	 *
-	 * @param reason
-	 */
-	Unload: (reason) => { },
+	Init: () => { },
+	Uninstall: () => { },
+	Load: () => { },
+	Unload: () => { },
 
 	interfaces: {
 		chat: {
 			/**
-			 *
-			 * @param arg
-			 * @param index
+			 * @returns {{ content: string }} 初始问候
 			 */
-			GetGreeting: (arg, index) => ({ content: bot.getInitialMessage() }),
+			GetGreeting: () => ({ content: bot.getInitialMessage() }),
 			/**
-			 *
-			 * @param arg
-			 * @param index
+			 * @param {{ chat_log: { content?: string }[] , UserCharname?: string }} arg 请求
+			 * @returns {{ content: string }} 群组问候
 			 */
-			GetGroupGreeting: (arg, index) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
+			GetGroupGreeting: (arg) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
 			/**
-			 *
-			 * @param args
-			 * @param prompt_struct
-			 * @param detail_level
+			 * @returns {Promise<{ text: never[], additional_chat_log: never[], extension: object }>} 空提示
 			 */
-			GetPrompt: async (args, prompt_struct, detail_level) => {
-				return {
-					text: [],
-					additional_chat_log: [],
-					extension: {},
-				}
-			},
+			GetPrompt: async () => ({
+				text: [],
+				additional_chat_log: [],
+				extension: {},
+			}),
 			/**
-			 *
-			 * @param args
-			 * @param prompt_struct
-			 * @param detail_level
+			 * @returns {{ text: { content: string, important: number }[], additional_chat_log: never[], extension: object }} 他者视角提示
 			 */
-			GetPromptForOther: (args, prompt_struct, detail_level) => {
-				return {
-					text: [{
-						content: 'a mock Rogerian psychotherapist',
-						important: 0
-					}],
-					additional_chat_log: [],
-					extension: {},
-				}
-			},
+			GetPromptForOther: () => ({
+				text: [{
+					content: 'a mock Rogerian psychotherapist',
+					important: 0
+				}],
+				additional_chat_log: [],
+				extension: {},
+			}),
 			/**
-			 *
-			 * @param args
+			 * @param {{ chat_log: { content?: string, extension?: { ElizaState?: object } }[] }} args 请求
+			 * @returns {Promise<{ content: string, extension: { ElizaState: object } }>} 回复
 			 */
 			GetReply: async (args) => {
 				const ElizaState = args.chat_log.findLast(x => x.extension?.ElizaState)?.extension?.ElizaState

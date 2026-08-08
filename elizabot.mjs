@@ -516,9 +516,10 @@ export class ElizaBot {
 
 		// Helper function to update transform arrays.
 		/**
-		 *
-		 * @param existing
-		 * @param updates
+		 * 合并既有变换规则与增量更新。
+		 * @param {Array | undefined} existing - 现有变换数组。
+		 * @param {Array | undefined} updates - 要追加的变换数组。
+		 * @returns {Array} 合并后的变换数组。
 		 */
 		const updateTransforms = (existing, updates) => {
 			if (updates && Array.isArray(updates))

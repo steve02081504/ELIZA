@@ -29,54 +29,54 @@ export default {
 	},
 
 	/**
-	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} _stat
+	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} stat
 	 */
-	Init: (_stat) => { },
+	Init: (stat) => { },
 	/**
-	 * @param {string} _reason
-	 * @param {string} _from
+	 * @param {string} reason
+	 * @param {string} from
 	 */
-	Uninstall: (_reason, _from) => { },
+	Uninstall: (reason, from) => { },
 	/**
-	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} _stat
+	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} stat
 	 */
-	Load: (_stat) => { },
+	Load: (stat) => { },
 	/**
-	 * @param {string} _reason
+	 * @param {string} reason
 	 */
-	Unload: (_reason) => { },
+	Unload: (reason) => { },
 
 	interfaces: {
 		chat: {
 			/**
-			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _arg
-			 * @param {number} _index
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} arg
+			 * @param {number} index
 			 * @returns {{ content: string }}
 			 */
-			GetGreeting: (_arg, _index) => ({ content: bot.getInitialMessage() }),
+			GetGreeting: (arg, index) => ({ content: bot.getInitialMessage() }),
 			/**
 			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} arg
-			 * @param {number} _index
+			 * @param {number} index
 			 * @returns {{ content: string }}
 			 */
-			GetGroupGreeting: (arg, _index) => {
+			GetGroupGreeting: (arg, index) => {
 				const last = arg.chat_log?.length ? arg.chat_log[arg.chat_log.length - 1]?.content : undefined
 				return { content: bot.greet(last || arg.UserCharname) }
 			},
 			/**
-			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _args
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args
 			 * @returns {Promise<{ text: never[], additional_chat_log: never[], extension: object }>}
 			 */
-			GetPrompt: async (_args) => ({
+			GetPrompt: async (args) => ({
 				text: [],
 				additional_chat_log: [],
 				extension: {},
 			}),
 			/**
-			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _args
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args
 			 * @returns {{ text: { content: string, important: number }[], additional_chat_log: never[], extension: object }}
 			 */
-			GetPromptForOther: (_args) => ({
+			GetPromptForOther: (args) => ({
 				text: [{
 					content: 'a mock Rogerian psychotherapist',
 					important: 0
@@ -92,7 +92,7 @@ export default {
 				const ElizaState = args.chat_log.findLast(x => x.extension?.ElizaState)?.extension?.ElizaState
 				if (ElizaState) bot.setState(ElizaState)
 				else bot.reset()
-				const result = bot.transform(args.chat_log.findLast(_ => true).content)
+				const result = bot.transform(args.chat_log.at(-1).content)
 				return {
 					content: result,
 					extension: {

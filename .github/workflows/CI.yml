@@ -20,6 +20,6 @@ jobs:
   test-running:
     runs-on: ubuntu-latest
     steps:
-      - uses: steve02081504/fount-charCI@580c31ea82dacac99b67f3a97a39f8f769b52f3a
+      - uses: steve02081504/fount-charCI@master
         with:
           CI-filepath: .github/workflows/CI.mjs

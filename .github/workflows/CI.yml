@@ -2,13 +2,15 @@ name: Test Running
 
 permissions:
   contents: read
-  actions: write
+  actions: write # fount-charCI cache save/delete
 
 on:
   workflow_dispatch:
   push:
     paths:
       - '**.mjs'
+      - 'fount.json'
+      - '.github/workflows/CI.yml'
     tags-ignore:
       - '*'
     branches:
@@ -18,6 +20,6 @@ jobs:
   test-running:
     runs-on: ubuntu-latest
     steps:
-      - uses: steve02081504/fount-charCI@master
+      - uses: steve02081504/fount-charCI@580c31ea82dacac99b67f3a97a39f8f769b52f3a
         with:
           CI-filepath: .github/workflows/CI.mjs

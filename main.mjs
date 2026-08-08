@@ -28,34 +28,55 @@ export default {
 		}
 	},
 
-	Init: () => { },
-	Uninstall: () => { },
-	Load: () => { },
-	Unload: () => { },
+	/**
+	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} _stat
+	 */
+	Init: (_stat) => { },
+	/**
+	 * @param {string} _reason
+	 * @param {string} _from
+	 */
+	Uninstall: (_reason, _from) => { },
+	/**
+	 * @param {import('../../../../../src/decl/charAPI.ts').charInit_t} _stat
+	 */
+	Load: (_stat) => { },
+	/**
+	 * @param {string} _reason
+	 */
+	Unload: (_reason) => { },
 
 	interfaces: {
 		chat: {
 			/**
-			 * @returns {{ content: string }} 初始问候
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _arg
+			 * @param {number} _index
+			 * @returns {{ content: string }}
 			 */
-			GetGreeting: () => ({ content: bot.getInitialMessage() }),
+			GetGreeting: (_arg, _index) => ({ content: bot.getInitialMessage() }),
 			/**
-			 * @param {{ chat_log: { content?: string }[] , UserCharname?: string }} arg 请求
-			 * @returns {{ content: string }} 群组问候
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} arg
+			 * @param {number} _index
+			 * @returns {{ content: string }}
 			 */
-			GetGroupGreeting: (arg) => ({ content: bot.greet(arg.chat_log[arg.chat_log.length - 1].content || arg.UserCharname) }),
+			GetGroupGreeting: (arg, _index) => {
+				const last = arg.chat_log?.length ? arg.chat_log[arg.chat_log.length - 1]?.content : undefined
+				return { content: bot.greet(last || arg.UserCharname) }
+			},
 			/**
-			 * @returns {Promise<{ text: never[], additional_chat_log: never[], extension: object }>} 空提示
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _args
+			 * @returns {Promise<{ text: never[], additional_chat_log: never[], extension: object }>}
 			 */
-			GetPrompt: async () => ({
+			GetPrompt: async (_args) => ({
 				text: [],
 				additional_chat_log: [],
 				extension: {},
 			}),
 			/**
-			 * @returns {{ text: { content: string, important: number }[], additional_chat_log: never[], extension: object }} 他者视角提示
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} _args
+			 * @returns {{ text: { content: string, important: number }[], additional_chat_log: never[], extension: object }}
 			 */
-			GetPromptForOther: () => ({
+			GetPromptForOther: (_args) => ({
 				text: [{
 					content: 'a mock Rogerian psychotherapist',
 					important: 0
@@ -64,8 +85,8 @@ export default {
 				extension: {},
 			}),
 			/**
-			 * @param {{ chat_log: { content?: string, extension?: { ElizaState?: object } }[] }} args 请求
-			 * @returns {Promise<{ content: string, extension: { ElizaState: object } }>} 回复
+			 * @param {import('../../../../../src/public/parts/shells/chat/decl/chatLog.ts').chatReplyRequest_t} args
+			 * @returns {Promise<{ content: string, extension: { ElizaState: object } }>}
 			 */
 			GetReply: async (args) => {
 				const ElizaState = args.chat_log.findLast(x => x.extension?.ElizaState)?.extension?.ElizaState
